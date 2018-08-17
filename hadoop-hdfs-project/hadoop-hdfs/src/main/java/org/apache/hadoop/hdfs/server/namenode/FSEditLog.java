@@ -1575,6 +1575,7 @@ public class FSEditLog implements LogsPurgeable {
     @Override
     public void selectInputStreams(Collection<EditLogInputStream> streams,
                                    long fromTxId, boolean inProgressOk) throws IOException {
+        // 调用JournalSet的同名方法
         journalSet.selectInputStreams(streams, fromTxId, inProgressOk);
     }
 
@@ -1600,10 +1601,13 @@ public class FSEditLog implements LogsPurgeable {
         // 在Object对象journalSetLock上使用synchronized进行同步
         synchronized (journalSetLock) {
             Preconditions.checkState(journalSet.isOpen(), "Cannot call " +"selectInputStreams() on closed FSEditLog");
+            // 调用三个参数的selectInputStreams()方法，传入空的streams列表，从fromTxId事务ID开始，
+            // 编辑日志同步时，标志位inProgressOk为false
             selectInputStreams(streams, fromTxId, inProgressOk);
         }
 
         try {
+            // 数据监测
             checkForGaps(streams, fromTxId, toAtLeastTxId, inProgressOk);
         } catch (IOException e) {
             if (recovery != null) {
